@@ -1,7 +1,7 @@
 # simple-linux-sysmon
 A simple Linux system monitoring tool, written in bash for maximum portability
 
-**This tool has been created for academic purposes only (bash practice) and should not be used in production!!**
+⚠️ **This tool has been created for academic purposes only (bash practice) and should not be used in production!!** ⚠️
 
 **System Requirements:**
 - Ubuntu
