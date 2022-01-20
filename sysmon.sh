@@ -10,7 +10,7 @@ defaultGateway=$(route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 2)
 dgif=$(route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 8)
 dgifIP=$(ifconfig enp0s5 | grep netmask | xargs | cut -d " " -f 2)
 if [ -n $defaultGateway ] && [ -n $dgifIP ]; then
-echo blah #	publicIP=$(dig @resolver1.opendns.com myip.opendns.com +short)
+	publicIP=$(dig @resolver1.opendns.com myip.opendns.com +short)
 fi
 
 if [ -z $defaultGateway ]; then defaultGateway="N/A"; fi
