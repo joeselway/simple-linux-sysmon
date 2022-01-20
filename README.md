@@ -3,13 +3,13 @@ A simple Linux system monitoring tool, written in bash for maximum portability
 
 **This tool has been created for academic purposes only (bash practice) and should not be used in production!!**
 
-System Requirements:
+**System Requirements:**
 - Ubuntu
   - 20.04 (tested)
   - 18.04 (??)
   - 16.04 (??)
 
-Data collected:
+**Data collected:**
 - CPU utilization
   - 1/5/15 minute load average
 - Memory utilization:
