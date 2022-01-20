@@ -8,6 +8,7 @@ System Requirements:
   - 20.04 (tested)
   - 18.04 (??)
   - 16.04 (??)
+
 Data collected:
 - CPU utilization
   - 1/5/15 minute load average
