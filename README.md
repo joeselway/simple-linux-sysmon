@@ -3,6 +3,9 @@ A simple Linux system monitoring tool, written in bash for maximum portability
 
 ⚠️ **This tool has been created for academic purposes only (bash practice) and should not be used in production!!** ⚠️
 
+**What it does**
+- Logs basic system info and performance statistics to a local file, in JSON format, for collection by a complementary log forwarder
+
 **System Requirements:**
 - Ubuntu
   - 20.04 (tested)
