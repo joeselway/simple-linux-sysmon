@@ -26,7 +26,7 @@ logSubDir="pretendco"
 logFileName="sysmonitor.log"
 
 # Enable debug echo?
-debugEcho=$TRUE
+debugEcho=true
 
 #######################################
 
@@ -84,18 +84,25 @@ if [ -z $publicIP ]; then publicIP="N/A"; fi
 #######################################
 
 #####  ECHO FOR DEBUG #################
+if [ $debugEcho = true ]; then
+	echo $(timestamp)
+	echo "** CPU 1/5/15 min average: **"
+	echo "$avg1m"
+	echo "$avg5m"
+	echo "$avg15m"
+	echo "** Network info: **"
+	echo "$defaultGateway"
+	echo "$dgif"
+	echo "$dgifIP"
+	echo "$publicIP"
+	echo "** Memory stats: **"
+	echo "$memAvailable"
+	echo "$memCommitted"
+fi
 
-echo $(timestamp)
-#echo "$loadAvg"
-echo "$avg1m"
-echo "$avg5m"
-echo "$avg15m"
-echo "$defaultGateway"
-echo "$dgif"
-echo "$dgifIP"
-echo "$publicIP"
-echo "$memAvailable"
-echo "$memCommitted"
+#######################################
+
+##### Output and exit: ################
 
 jsonOut=$(echo \
 "{"\
@@ -106,10 +113,6 @@ jsonOut=$(echo \
 "{\"group\":\"memory\",\"memory_total\":\"$memTotal\",\"memory_free\":\"$memFree\",\"memory_available\":\"$memAvailable\",\"memory_committed\",\"$memCommitted\"},"\
 "{\"group\":\"network_info\",\"default_gateway\":\"$defaultGateway\",\"interface\":\"$dgif\",\"local_ip\":\"$dgifIP\",\"public_ip\":\"$publicIP\"}"\
 "]}")\
-
-#######################################
-
-##### Output and exit: ################
 
 # Warn if cannot write to /var/log and fall back to $HOME
 if [ ! -w $logDir ] && [ ! -w $logDir/$logSubDir ]; then
