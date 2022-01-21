@@ -7,8 +7,8 @@
 # Known issues:                                            #
 #                                                          #
 # - Output will accumulate if log collector not working    #
-# - Doesn't handle multiple default gateways (to-do)       #
-# - Network utilization to-do                              #
+# - Doesn't handle multiple interface gateways             #
+# - Network utilization for primary interface only         #
 #                                                          #
 ############################################################
 
@@ -24,10 +24,10 @@ logSubDir="pretendco"
 logFileName="sysmonitor.log"
 
 # Enable debug echo?
-debugEchoEnabled=true
+debugEchoEnabled=false
 
 # Use net-tools instead of iproute2?
-netToolsEnabled=true
+netToolsEnabled=false
 
 #######################################
 
@@ -38,7 +38,7 @@ main() {
 	getCpuStats
 	getMemStats
 	getNetInfo
-	#getNetStats
+	getNetStats
 
 	jsonOut=$(echo \
 	"{"\
@@ -46,12 +46,13 @@ main() {
 	"\"time\":\"$(timestamp)\","\
 	"\"stats\":["\
 	"{\"group\":\"cpu\",\"load1min\":\"$load1m\",\"load5min\":\"$load5m\",\"load15min\":\"$load15m\",\"time_user\":\"$timeUser\",\"time_system\":\"$timeSys\",\"time_idle\":\"$timeIdle\",\"time_waiting\":\"$timeWait\",\"time_stolen\":\"$timeStolen\",\"time_utilized\":\"$timeUtilized\"},"\
-	"{\"group\":\"memory\",\"memory_total\":\"$memTotal\",\"memory_free\":\"$memFree\",\"memory_available\":\"$memAvailable\",\"memory_committed\",\"$memCommitted\"},"\
+	"{\"group\":\"memory\",\"memory_total\":\"$memTotal\",\"memory_free\":\"$memFree\",\"memory_available\":\"$memAvailable\",\"memory_committed\":\"$memCommitted\"},"\
 	"{\"group\":\"network_info\",\"default_gateway\":\"$defaultGateway\",\"interface\":\"$dgif\",\"local_ip\":\"$dgifIP\",\"public_ip\":\"$publicIP\"}"\
+	"{\"group\":\"network_stats\",\"tx_bytes_total\":\"$txBytesTotal\",\"tx_bps\":\"$txBps\",\"rx_bytes_total\":\"$rxBytesTotal\",\"rx_bps\":\"$rxBps\"}"\
 	"]}")\
 
-	if [ "$debugEchoEnabled" = true ]; then debugEcho; fi
 	outputJson
+	if [ "$debugEchoEnabled" = true ]; then debugEcho; fi
 }
 
 ##### Host info: ######################
@@ -77,7 +78,6 @@ getCpuStats() {
 	load15m=${loadAvg:10:4}
 
 	# Get more CPU stats from vmstat
-
 	vmstatString=$(vmstat | tail -1 | xargs)
 	timeUser=$(echo "$vmstatString" | cut -d " " -f 13)
 	timeSys=$(echo "$vmstatString" | cut -d " " -f 14)
@@ -86,7 +86,6 @@ getCpuStats() {
 	timeStolen=$(echo "$vmstatString" | cut -d " " -f 17)
 
 	# Calculate total utilization
-
 	timeUtilized=$((timeUser + timeSys + timeStolen))
 }
 
@@ -94,7 +93,6 @@ getCpuStats() {
 # Diff this with total to get "MemCommitted" value for same reason
 
 # Get memory stats from /proc/meminfo
-
 getMemStats() {
 	memTotal=$(sed "1q;d" /proc/meminfo | xargs | cut -d " " -f 2)
 	memFree=$(sed "2q;d" /proc/meminfo | xargs | cut -d " " -f 2)
@@ -106,29 +104,27 @@ getMemStats() {
 
 ##### Network info: ###################
 
-
-
 getNetInfo() {
 	if [ "$netToolsEnabled" = true ]; then
 		# Get default gateway from route list, then get associated interface name/IP
-		### Using net-tools###
+		### Using net-tools ###
 		if [ "$debugEchoEnabled" = true ]; then echo "Using net-tools for network info..."; fi
-		defaultGateway=$(route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 2)
-		dgif=$(route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 8)
-		dgifIP=$(ifconfig enp0s5 | grep netmask | xargs | cut -d " " -f 2)
+		defaultGateway=$(/usr/sbin/route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 2)
+		dgif=$(/usr/sbin/route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 8)
+		dgifIP=$(/usr/sbin/ifconfig enp0s5 | grep netmask | xargs | cut -d " " -f 2)
 	else
 		# Get default gateway from route list, then get associated interface name/IP
-		### Using iproute2###
+		### Using iproute2 ###
 		if [ "$debugEchoEnabled" = true ]; then echo "Using iproute2 for network info..."; fi
-		ipString=$(ip route get 8.8.8.8 | grep src)
+		ipString=$(/usr/bin/ip route get 8.8.8.8 | grep src)
 		defaultGateway=$(echo "$ipString" | cut -d " " -f 3)
 		dgif=$(echo "$ipString" | cut -d " " -f 5)
 		dgifIP=$(echo "$ipString" | cut -d " " -f 7)
 	fi
 
 	# If network connection exists, try to get public IP from OpenDNS
-	if [ -n $defaultGateway ] && [ -n $dgifIP ]; then
-		publicIP=$(dig @resolver1.opendns.com myip.opendns.com +short)
+	if [ -n "$defaultGateway" ] && [ -n "$dgifIP" ]; then
+		publicIP=$(/usr/bin/dig @resolver1.opendns.com myip.opendns.com +short)
 	fi
 
 	# Set any missing network info to N/A
@@ -139,8 +135,19 @@ getNetInfo() {
 }
 #######################################
 
-# JSONify
+#### Network stats: ###################
 
+getNetStats() {
+	# Take two samples 1 second apart
+	txBytesTemp=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/tx_bytes)
+	/usr/bin/sleep 1
+	txBytesTotal=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/tx_bytes)
+	txBps=$((txBytesTotal - txBytesTemp))
+	rxBytesTemp=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/rx_bytes)
+	/usr/bin/sleep 1
+	rxBytesTotal=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/rx_bytes)
+	rxBps=$((rxBytesTotal - rxBytesTemp))
+}
 
 #####  ECHO FOR DEBUG #################
 
@@ -157,15 +164,20 @@ debugEcho() {
 	echo "$timeWait"
 	echo "$timeStolen"
 	echo "$timeUtilized"
+	echo "** Memory stats: **"
+	echo "$memAvailable"
+	echo "$memCommitted"
+	echo "$jsonOut"
 	echo "** Network info: **"
 	echo "$defaultGateway"
 	echo "$dgif"
 	echo "$dgifIP"
 	echo "$publicIP"
-	echo "** Memory stats: **"
-	echo "$memAvailable"
-	echo "$memCommitted"
-	echo "$jsonOut"
+	echo "** Network stats: **"
+	echo "$txBytesTotal"
+	echo "$txBps"
+	echo "$rxBytesTotal"
+	echo "$rxBps"
 }
 
 #######################################
@@ -174,12 +186,12 @@ debugEcho() {
 
 # Warn if cannot write to /var/log and fall back to $HOME
 outputJson() {
-if [ ! -w "$logDir" ] && [ ! -w "$logDir"/"$logSubDir" ]; then
-	echo "WARNING: Cannot write to /var/log/, logging to $HOME"
-	logDir=$HOME
-fi
-if [ ! -d "$logDir"/"$logSubDir" ]; then mkdir $logDir/$logSubDir; fi
-echo "$jsonOut" >> $logDir/$logSubDir/$logFileName
+	if [ ! -w "$logDir" ] && [ ! -w "$logDir"/"$logSubDir" ]; then
+		echo "WARNING: Cannot write to /var/log/, logging to $HOME"
+		logDir="$HOME"
+	fi
+	if [ ! -d "$logDir"/"$logSubDir" ]; then mkdir "$logDir"/"$logSubDir"; fi
+	echo "$jsonOut" >> "$logDir"/"$logSubDir"/"$logFileName"
 }
 
 ########################################
