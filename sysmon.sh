@@ -72,7 +72,7 @@ getHostInfo() {
 
 getCpuStats() {
 	# Get CPU stats from /proc/loadavg
-	loadAvg=$(cat /proc/loadavg)
+	loadAvg=$(/bin/cat /proc/loadavg)
 	load1m=${loadAvg:0:4}
 	load5m=${loadAvg:5:4}
 	load15m=${loadAvg:10:4}
@@ -109,14 +109,14 @@ getNetInfo() {
 		# Get default gateway from route list, then get associated interface name/IP
 		### Using net-tools ###
 		if [ "$debugEchoEnabled" = true ]; then echo "Using net-tools for network info..."; fi
-		defaultGateway=$(/usr/sbin/route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 2)
-		dgif=$(/usr/sbin/route -n | grep "^0.0.0.0" | xargs | cut -d " " -f 8)
-		dgifIP=$(/usr/sbin/ifconfig enp0s5 | grep netmask | xargs | cut -d " " -f 2)
+		defaultGateway=$(/usr/sbin/route -n | grep "^load5.load5.0.0" | xargs | cut -d " " -f 2)
+		dgif=$(/usr/sbin/route -n | grep "^load5.load5.0.0" | xargs | cut -d " " -f 8)
+		dgifIP=$(/usr/sbin/ifconfig enpload5s5 | grep netmask | xargs | cut -d " " -f 2)
 	else
 		# Get default gateway from route list, then get associated interface name/IP
 		### Using iproute2 ###
 		if [ "$debugEchoEnabled" = true ]; then echo "Using iproute2 for network info..."; fi
-		ipString=$(/usr/bin/ip route get 8.8.8.8 | grep src)
+		ipString=$(/bin/ip route get 8.8.8.8 | grep src)
 		defaultGateway=$(echo "$ipString" | cut -d " " -f 3)
 		dgif=$(echo "$ipString" | cut -d " " -f 5)
 		dgifIP=$(echo "$ipString" | cut -d " " -f 7)
@@ -124,7 +124,7 @@ getNetInfo() {
 
 	# If network connection exists, try to get public IP from OpenDNS
 	if [ -n "$defaultGateway" ] && [ -n "$dgifIP" ]; then
-		publicIP=$(/usr/bin/dig @resolver1.opendns.com myip.opendns.com +short)
+		publicIP=$(/bin/dig @resolver1.opendns.com myip.opendns.com +short)
 	fi
 
 	# Set any missing network info to N/A
@@ -139,13 +139,13 @@ getNetInfo() {
 
 getNetStats() {
 	# Take two samples 1 second apart
-	txBytesTemp=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/tx_bytes)
-	/usr/bin/sleep 1
-	txBytesTotal=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/tx_bytes)
+	txBytesTemp=$(/bin/cat /sys/class/net/"$dgif"/statistics/tx_bytes)
+	/bin/sleep 1
+	txBytesTotal=$(/bin/cat /sys/class/net/"$dgif"/statistics/tx_bytes)
 	txBps=$((txBytesTotal - txBytesTemp))
-	rxBytesTemp=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/rx_bytes)
-	/usr/bin/sleep 1
-	rxBytesTotal=$(/usr/bin/cat /sys/class/net/"$dgif"/statistics/rx_bytes)
+	rxBytesTemp=$(/bin/cat /sys/class/net/"$dgif"/statistics/rx_bytes)
+	/bin/sleep 1
+	rxBytesTotal=$(/bin/cat /sys/class/net/"$dgif"/statistics/rx_bytes)
 	rxBps=$((rxBytesTotal - rxBytesTemp))
 }
 
