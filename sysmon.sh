@@ -124,7 +124,7 @@ getNetInfo() {
 
 	# If network connection exists, try to get public IP from OpenDNS
 	if [ -n "$defaultGateway" ] && [ -n "$dgifIP" ]; then
-		publicIP=$(/bin/dig @resolver1.opendns.com myip.opendns.com +short)
+		publicIP=$(/usr/bin/dig @resolver1.opendns.com myip.opendns.com +short)
 	fi
 
 	# Set any missing network info to N/A
