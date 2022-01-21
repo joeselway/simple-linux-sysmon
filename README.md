@@ -18,7 +18,7 @@ Logs basic system info and performance statistics to a local test file, in JSON 
 - Copy sysmon.sh to /usr/local/pretendco/bin/ or desired location (if changing, modify sysmonitor.service accordingly)
 - Copy sysmonitor.server and sysmonitor.timer to /etc/systemd/system/
 - Set sane permissions
-- Run `systemctl enable sysmonitor.timer`
+- Run `systemctl enable sysmonitor.timer && systemctl start sysmonitor.timer`
 
 **Known issues**
 
