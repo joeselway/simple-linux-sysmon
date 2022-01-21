@@ -7,7 +7,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/pretendco/sysmon.sh
+ExecStart=/usr/local/pretendco/bin/sysmon.sh
 
 [Install]
 WantedBy=default.target
