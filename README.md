@@ -12,6 +12,19 @@ Logs basic system info and performance statistics to a local test file, in JSON 
   - 18.04 (tested)
   - 16.04 (?? untested)
 
+** Installation **
+
+- Copy sysmon.sh to /usr/local/pretendco/bin/ or desired location (if changing, modify sysmonitor.service accordingly)
+- Copy sysmonitor.server and sysmonitor.timer to /etc/systemd/system/
+- Set sane permissions
+- Run `systemctl enable sysmonitor.timer`
+
+** Known issues **
+
+- Output will accumulate if log collector not working.
+- Doesn't handle multiple interface gateways.
+- Network utilization for primary (top default gateway) interface only.
+
 **Data collected:**
 - CPU utilization
   - 1/5/15 minute load average
