@@ -7,26 +7,26 @@ A simple Linux system monitoring tool, written in bash for maximum portability.
 
 Logs basic system info and performance statistics to a local test file, in JSON format, for collection by a compatible log forwarder
 
-**System Requirements:**
+**System Requirements**
 - Ubuntu
   - 20.04 (tested)
   - 18.04 (tested)
   - 16.04 (?? untested)
 
-** Installation **
+**Installation**
 
 - Copy sysmon.sh to /usr/local/pretendco/bin/ or desired location (if changing, modify sysmonitor.service accordingly)
 - Copy sysmonitor.server and sysmonitor.timer to /etc/systemd/system/
 - Set sane permissions
 - Run `systemctl enable sysmonitor.timer`
 
-** Known issues **
+**Known issues**
 
 - Output will accumulate if log collector not working.
 - Doesn't handle multiple interface gateways.
 - Network utilization for primary (top default gateway) interface only.
 
-**Data collected:**
+**Data collected**
 - CPU utilization
   - 1/5/15 minute load average
   - Current cpu time %age breakdown
