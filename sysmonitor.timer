@@ -1,0 +1,11 @@
+# Timer for PretendCo's Simple Linux System Monitor service
+
+[Unit]
+Description=Timer for simple system monitor service
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+
+[Install]
+WantedBy=default.target

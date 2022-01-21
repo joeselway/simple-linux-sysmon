@@ -1,0 +1,14 @@
+# A service unit for the PretendCo Simple Linux System Monitor
+# Use with timer file (default = every 5 minutes)
+
+[Unit]
+Description=Run simple system monitor script
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/pretendco/sysmon.sh
+
+[Install]
+WantedBy=default.target
+
