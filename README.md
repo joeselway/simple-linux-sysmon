@@ -4,6 +4,7 @@ A simple Linux system monitoring tool, written in bash for maximum portability.
 ⚠️ **This tool has been created for academic purposes only (bash practice) and should not be used in production!!** ⚠️
 
 **Overview**
+
 Logs basic system info and performance statistics to a local test file, in JSON format, for collection by a compatible log forwarder
 
 **System Requirements:**
